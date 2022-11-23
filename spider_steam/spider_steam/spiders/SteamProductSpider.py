@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 import re
 import requests
 from bs4 import BeautifulSoup
+from scrapy.exceptions import CloseSpider
 from spider_steam.items import SpiderSteamItem
 
 
@@ -48,14 +49,15 @@ class SteamproductspiderSpider(scrapy.Spider):
     allowed_domains = ['store.steampowered.com']
     start_urls = do_start_urls()
 
-
     def parse(self, response):
         # print("URLS:", *self.start_urls)
         items = SpiderSteamItem()
         name = response.xpath('//div[@id="appHubAppName"][@class="apphub_AppName"]/text()').extract()
         category = response.xpath('//div[@class="blockbg"]/a/text()').extract()
-        review_cnt = response.xpath('//div[@itemprop="aggregateRating"]/div[@class="summary column"]/span[@class="responsive_hidden"]/text()').extract()
-        total_review = response.xpath('//div[@itemprop="aggregateRating"]/div[@class="summary column"]/span[@class="game_review_summary positive"]/text()').extract()
+        review_cnt = response.xpath(
+            '//div[@itemprop="aggregateRating"]/div[@class="summary column"]/span[@class="responsive_hidden"]/text()').extract()
+        total_review = response.xpath(
+            '//div[@itemprop="aggregateRating"]/div[@class="summary column"]/span[@class="game_review_summary positive"]/text()').extract()
         release_date = response.xpath('//div[@class="release_date"]/div[@class="date"]/text()').extract()
         developer = response.xpath('//div[@class="dev_row"]/div[@id="developers_list"]/a/text()').extract()
         tags = response.xpath('//div[@class="glance_tags popular_tags"]/a/text()').extract()
@@ -63,6 +65,7 @@ class SteamproductspiderSpider(scrapy.Spider):
         if len(price) == 0:
             price = response.xpath('//div[@class="game_purchase_price price"]/text()').extract()
         platforms = response.xpath('//div[@class="sysreq_tabs"]/div/text()').extract()
+
         items['game_name'] = ''.join(name).strip()
         items['game_category'] = '/'.join(map(lambda x: x.strip(), category[1:])).strip()
         items['game_review_cnt'] = ''.join(re.sub(r'\D', '', str(review_cnt))).strip()
@@ -79,4 +82,12 @@ class SteamproductspiderSpider(scrapy.Spider):
                 items['game_price'] = ''.join(price).strip()
         items['game_platforms'] = ', '.join(map(lambda x: x.strip(), platforms)).strip()
         # print('ITEMS:', items.values())
-        yield items
+
+        year = '2000'
+        if len(items['game_release_date']) > 0:
+            try:
+                year = items['game_release_date'].split()[-1]
+            except Exception:
+                pass
+        if len(name) != 0 and len(name[0]) != 0 and year >= '2000':
+            yield items
