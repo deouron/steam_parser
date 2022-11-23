@@ -16,4 +16,5 @@ class SpiderSteamItem(scrapy.Item):
     game_release_date = scrapy.Field()
     game_developer = scrapy.Field()
     game_tags = scrapy.Field()
+    game_price = scrapy.Field()
     game_platforms = scrapy.Field()

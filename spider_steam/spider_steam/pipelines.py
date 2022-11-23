@@ -14,7 +14,7 @@ from itemadapter import ItemAdapter
 
 class SpiderSteamPipeline:
     def open_spider(self, spider):
-        self.file = open('items.json', 'rw')
+        self.file = open('items.json', 'w+')
 
     def close_spider(self, spider):  # что делать при окончании работы паука (закрываем файлик)
         self.file.close()

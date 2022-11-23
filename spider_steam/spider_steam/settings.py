@@ -10,7 +10,7 @@
 BOT_NAME = 'spider_steam'
 
 SPIDER_MODULES = ['spider_steam.spiders']
-NEWSPIDER_MODULE = 'spider_steam.spiders'
+# DOWNLOAD_DELAY = 2
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
